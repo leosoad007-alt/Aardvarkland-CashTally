@@ -1,4 +1,4 @@
-name: Compilar APK CashTally Corregido
+name: Compilar APK CashTally Flutter Oficial
 
 on:
   workflow_dispatch:
@@ -11,32 +11,29 @@ jobs:
       - name: Descargar el código fuente
         uses: actions/checkout@v4
 
-      - name: Configurar Java 17
+      - name: Configurar Java 17 (Requerido para Android)
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: Otorgar permisos al ejecutable de Gradle
-        working-directory: ./cashtally
-        run: chmod +x gradlew
-        continue-on-error: true
+      - name: Instalar Flutter Estable
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
 
-      - name: Compilar la aplicación (Generar APK en Subcarpeta)
-        working-directory: ./cashtally
+      - name: Instalar Dependencias del Proyecto
         run: |
-          if [ -f "./gradlew" ]; then
-            ./gradlew assembleRelease --no-daemon
-          else
-            gradle assembleRelease --no-daemon
-          fi
+          flutter pub get
+          flutter clean
+          flutter pub get
 
-      - name: Subir instalador como resultado
+      - name: Compilar APK (Instalador Android)
+        run: flutter build apk --split-per-abi
+
+      - name: Subir Instalador Resultante
         uses: actions/upload-artifact@v4
         with:
-          name: CashTally-APK-Instalador
-          path: |
-            cashtally/app/build/outputs/apk/release/*.apk
-            cashtally/build/outputs/apk/release/*.apk
-            k
-            
+          name: CashTally-APK-Final
+          path: build/app/outputs/flutter-apk/*.apk
+          
