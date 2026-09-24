@@ -1,0 +1,39 @@
+name: Compilar APK CashTally
+
+on:
+  workflow_dispatch: # Activa el botón para compilar manualmente
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar el código fuente
+        uses: actions/checkout@v4
+
+      - name: Configurar Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Otorgar permisos al ejecutable de Gradle
+        run: chmod +x gradlew
+        continue-on-error: true
+
+      - name: Compilar la aplicación (Generar APK)
+        run: |
+          if [ -f "./gradlew" ]; then
+            ./gradlew assembleRelease --no-daemon
+          else
+            gradle assembleRelease --no-daemon
+          fi
+
+      - name: Subir instalador como resultado
+        uses: actions/upload-artifact@v4
+        with:
+          name: CashTally-APK-Instalador
+          path: |
+            app/build/outputs/apk/release/*.apk
+            build/outputs/apk/release/*.apk
+            
